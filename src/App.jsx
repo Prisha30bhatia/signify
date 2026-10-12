@@ -1,3 +1,4 @@
+import Collect from "./Collect";
 import { useEffect, useRef, useState } from "react";
 import {
   FilesetResolver,
@@ -9,7 +10,7 @@ const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
 const MODEL =
   "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
-export default function App() {
+  function Tracker() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [status, setStatus] = useState("Loading hand tracker...");
@@ -117,3 +118,6 @@ export default function App() {
     </div>
   );
 }
+export default function App() {
+     return window.location.hash === "#collect" ? <Collect /> : <Tracker />;
+   }
