@@ -1,3 +1,4 @@
+import Recognize from "./Recognize";
 import Collect from "./Collect";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -118,6 +119,9 @@ const MODEL =
     </div>
   );
 }
-export default function App() {
-     return window.location.hash === "#collect" ? <Collect /> : <Tracker />;
+   export default function App() {
+     const hash = window.location.hash;
+     if (hash === "#collect") return <Collect />;
+     if (hash === "#recognize") return <Recognize />;
+     return <Tracker />;
    }
