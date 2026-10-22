@@ -1,3 +1,4 @@
+ import Lesson from "./Lesson";
 import Recognize from "./Recognize";
 import Collect from "./Collect";
 import { useEffect, useRef, useState } from "react";
@@ -119,9 +120,17 @@ const MODEL =
     </div>
   );
 }
-   export default function App() {
-     const hash = window.location.hash;
+    export default function App() {
+     const [hash, setHash] = useState(window.location.hash);
+     useEffect(() => {
+       const onChange = () => setHash(window.location.hash);
+       window.addEventListener("hashchange", onChange);
+       return () => window.removeEventListener("hashchange", onChange);
+     }, []);
+
      if (hash === "#collect") return <Collect />;
      if (hash === "#recognize") return <Recognize />;
+     const m = hash.match(/^#lesson\/(\d+)$/);
+     if (m) return <Lesson key={m[1]} id={Number(m[1])} />;
      return <Tracker />;
    }
