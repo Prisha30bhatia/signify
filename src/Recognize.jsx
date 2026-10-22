@@ -175,7 +175,11 @@ export default function Recognize() {
   >
     {target}
   </div>
-
+   <img
+  src={`/signs/${target.toLowerCase()}.png`}
+  alt={`ASL handshape for the letter ${target}`}
+  style={{ width: 240, display: "block", marginBottom: 16 }}
+/>   
   <div
     style={{
       height: 14,

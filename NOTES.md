@@ -10,9 +10,9 @@ For Contest: Congressional App Challenge. Deadline/Goals: App done by Oct 20, vi
 - Large action buttons with obvious purpose 
 - easy to use website
 - Shouldn't make deaf community feel gimmicky in any way
-Done:
 - Project set up, webcam shows on the page, code is on GitHub
 - Skeleton hand tracking is done 
+- Images from American Society for Deaf Children(Free online, copyright belongs to them) 
 
-Next:
-- Step 2: MediaPipe hand tracking, deploy to Vercel
+
+
