@@ -1,3 +1,4 @@
+import { shareMessage } from "./share";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useHandSign } from "./useHandSign";
 import { useHold } from "./useHold";
@@ -70,6 +71,7 @@ export default function Lesson({ id }) {
   const [passed, setPassed] = useState(false);
   const [hint, setHint] = useState(false);
   const [xp, setXp] = useState(0);
+  const [shareMsg, setShareMsg] = useState("");
   const timer = useRef(null);
   const saved = useRef(false); const hints = useRef(0);
 
@@ -112,7 +114,24 @@ export default function Lesson({ id }) {
           +{xp} XP
         </p>
         <button style={primary} onClick={exit}>
-          Back to lessons
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+  <button style={primary} onClick={exit}>
+    Back to lessons
+  </button>
+  <button
+    style={quiet}
+    onClick={async () =>
+      setShareMsg(
+        await shareMessage(
+          `I just finished "${lesson.title}" in Signify and earned ${xp} XP! Learn ASL with your webcam: ${window.location.origin}`
+        )
+      )
+    }
+  >
+    Share
+  </button>
+</div>
+<p style={{ minHeight: 24, color: "#3D5A80" }}>{shareMsg}</p>
         </button>
       </div>
     );

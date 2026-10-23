@@ -176,7 +176,31 @@ function BadgesTab({ p }) {
     </div>
   );
 }
-
+function CertificateTab({ p }) {
+  const finished = p.completed.length;
+  const all = finished >= LESSONS.length;
+  return (
+    <div style={{ maxWidth: 480 }}>
+      <h2 style={{ fontSize: 22, marginTop: 0 }}>Certificate</h2>
+      {all ? (
+        <>
+          <p>You finished every lesson. Your certificate is ready.</p>
+          <button style={primary} onClick={() => (window.location.hash = "#certificate")}>
+            View certificate
+          </button>
+        </>
+      ) : (
+        <>
+          <p>Finish all {LESSONS.length} lessons to unlock your certificate.</p>
+          <Bar value={finished / LESSONS.length} color="#8DB580" />
+          <p style={{ color: "#3D5A80" }}>
+            {finished} of {LESSONS.length} done
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
 export default function Home() {
   const [tab, setTab] = useState("learn");
   const p = loadProgress();
@@ -187,6 +211,7 @@ export default function Home() {
     ["learn", "Learn"],
     ["progress", "Progress"],
     ["badges", "Badges"],
+    ["certificate", "Certificate"],
   ];
 
   return (
@@ -239,6 +264,7 @@ export default function Home() {
         {tab === "learn" && <Path p={p} />}
         {tab === "progress" && <ProgressTab p={p} />}
         {tab === "badges" && <BadgesTab p={p} />}
+        {tab === "certificate" && <CertificateTab p={p} />}
       </main>
     </div>
   );

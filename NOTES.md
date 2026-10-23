@@ -13,6 +13,7 @@ For Contest: Congressional App Challenge. Deadline/Goals: App done by Oct 20, vi
 - Project set up, webcam shows on the page, code is on GitHub
 - Skeleton hand tracking is done 
 - Images from American Society for Deaf Children(Free online, copyright belongs to them) 
+- Added first couple of lessons, XP, path map, progress bar, streak, and badges 
 
 
 

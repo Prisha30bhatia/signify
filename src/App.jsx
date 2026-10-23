@@ -1,3 +1,5 @@
+import Intro from "./Intro";
+import Certificate from "./Certificate";
 import Home from "./Home";
 import Lesson from "./Lesson";
 import Recognize from "./Recognize";
@@ -121,18 +123,22 @@ const MODEL =
     </div>
   );
 }
-    export default function App() {
-     const [hash, setHash] = useState(window.location.hash);
-     useEffect(() => {
-       const onChange = () => setHash(window.location.hash);
-       window.addEventListener("hashchange", onChange);
-       return () => window.removeEventListener("hashchange", onChange);
-     }, []);
+   export default function App() {
+  const [hash, setHash] = useState(window.location.hash);
+  useEffect(() => {
+    const onChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onChange);
+    return () => window.removeEventListener("hashchange", onChange);
+  }, []);
 
-     if (hash === "#collect") return <Collect />;
-     if (hash === "#recognize") return <Recognize />;
-     const m = hash.match(/^#lesson\/(\d+)$/);
-     if (m) return <Lesson key={m[1]} id={Number(m[1])} />;
-        if (hash === "#tracker") return <Tracker />;
-        return <Home />;;
-   }
+  if (hash === "#collect") return <Collect />;
+  if (hash === "#recognize") return <Recognize />;
+  const m = hash.match(/^#lesson\/(\d+)$/);
+  if (m) return <Lesson key={m[1]} id={Number(m[1])} />;
+
+  if (hash === "#home") return <Home />;
+  if (hash === "#certificate") return <Certificate />;
+  if (hash === "#certificate-preview") return <Certificate preview />;
+  if (hash === "#tracker") return <Tracker />;
+  return <Intro />;
+}

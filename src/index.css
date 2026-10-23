@@ -20,3 +20,11 @@ body {
   background: var(--bg);
   color: var(--ink);
 }
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
