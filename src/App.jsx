@@ -1,4 +1,5 @@
- import Lesson from "./Lesson";
+import Home from "./Home";
+import Lesson from "./Lesson";
 import Recognize from "./Recognize";
 import Collect from "./Collect";
 import { useEffect, useRef, useState } from "react";
@@ -132,5 +133,6 @@ const MODEL =
      if (hash === "#recognize") return <Recognize />;
      const m = hash.match(/^#lesson\/(\d+)$/);
      if (m) return <Lesson key={m[1]} id={Number(m[1])} />;
-     return <Tracker />;
+        if (hash === "#tracker") return <Tracker />;
+        return <Home />;;
    }

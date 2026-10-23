@@ -57,7 +57,7 @@ const quiet = {
 };
 
 function exit() {
-  window.location.hash = "";
+  window.location.hash = "#home";
 }
 
 export default function Lesson({ id }) {
@@ -71,7 +71,7 @@ export default function Lesson({ id }) {
   const [hint, setHint] = useState(false);
   const [xp, setXp] = useState(0);
   const timer = useRef(null);
-  const saved = useRef(false);
+  const saved = useRef(false); const hints = useRef(0);
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -99,7 +99,7 @@ export default function Lesson({ id }) {
   useEffect(() => {
     if (done && !saved.current) {
       saved.current = true;
-      completeLesson(lesson.id, xp);
+      completeLesson(lesson.id, xp, hints.current === 0);
     }
   }, [done, lesson.id, xp]);
 
@@ -190,6 +190,7 @@ export default function Lesson({ id }) {
     ))}
   </p>
 )}
+
           {step.type === "spell" ? (
             <div style={{ fontSize: 56, fontWeight: 700, letterSpacing: 8, margin: "8px 0 16px" }}>
               {step.word.split("").map((c, k) => (
@@ -220,7 +221,10 @@ export default function Lesson({ id }) {
 
           {step.type === "teach" && <p style={{ maxWidth: 340 }}>{TIPS[target]}</p>}
           {step.type === "recall" && !hint && (
-            <button style={{ ...quiet, marginBottom: 16 }} onClick={() => setHint(true)}>
+            <button style={{ ...quiet, marginBottom: 16 }} onClick={() => {
+        hints.current += 1;
+        setHint(true);
+}}>
               Show hint
             </button>
           )}
