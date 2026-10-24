@@ -1,3 +1,4 @@
+import { chime, celebrate, isMuted, setMuted, reduceMotion } from "./effects";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useHandSign } from "./useHandSign";
 import { useHold } from "./useHold";
@@ -5,6 +6,7 @@ import { matches } from "./signMatch";
 import { LESSONS, TIPS } from "./lessons";
 import { completeLesson } from "./progress";
 import { shareMessage } from "./share";
+
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -106,6 +108,22 @@ function SignTile({ letter, size, alt }) {
   );
 }
 
+function CountUp({ to }) {
+  const [n, setN] = useState(reduceMotion() ? to : 0);
+  useEffect(() => {
+    if (reduceMotion()) return;
+    let raf;
+    const start = performance.now();
+    function tick(now) {
+      const t = Math.min(1, (now - start) / 900);
+      setN(Math.round(to * t));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to]);
+  return <>{n}</>;
+}
 export default function Lesson({ id }) {
   const lesson = LESSONS.find((l) => l.id === id);
   const { videoRef, canvasRef, status, letter } = useHandSign();
@@ -123,6 +141,7 @@ export default function Lesson({ id }) {
   const [missed, setMissed] = useState([]);
   const [reviewing, setReviewing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
+  const [muted, setMutedState] = useState(isMuted());
 
   const timer = useRef(null);
   const saved = useRef(false);
@@ -182,6 +201,7 @@ export default function Lesson({ id }) {
   }
 
   function onPass() {
+    chime();
     setPassed(true);
     const helpedNow = helped.current || hint;
     if (step.type !== "teach") {
@@ -197,6 +217,7 @@ export default function Lesson({ id }) {
   function pickAnswer(c) {
     if (passed) return;
     if (c === step.letter) {
+      chime();
       const first = wrongPicks.length === 0;
       setPassed(true);
       setScored((s) => s + 1);
@@ -228,6 +249,7 @@ export default function Lesson({ id }) {
     if (done && !saved.current) {
       saved.current = true;
       completeLesson(lesson.id, xp, scored === clean);
+      if (!reviewing) celebrate();
     }
   }, [done, lesson.id, xp, scored, clean]);
 
@@ -238,7 +260,7 @@ export default function Lesson({ id }) {
         <p style={{ fontSize: 18, marginTop: 12 }}>{lesson.title}</p>
         {!reviewing && (
           <p style={{ fontSize: 40, fontWeight: 700, color: "#3D5A80", margin: "24px 0 8px" }}>
-            +{xp} XP
+            +<CountUp to={xp} /> XP
           </p>
         )}
         <p style={{ fontSize: 18, margin: "16px 0" }}>
@@ -319,7 +341,16 @@ export default function Lesson({ id }) {
             }}
           />
         </div>
-        <span style={{ fontWeight: 600, color: "#3D5A80" }}>{xp} XP</span>
+           <button
+     style={quiet}
+     onClick={() => {
+       setMuted(!muted);
+       setMutedState(!muted);
+     }}
+   >
+     {muted ? "Sound off" : "Sound on"}
+   </button>
+   <span style={{ fontWeight: 600, color: "#3D5A80" }}>{xp} XP</span>
       </div>
 
       <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
@@ -334,6 +365,8 @@ export default function Lesson({ id }) {
                 background: "#293241",
                 borderRadius: 8,
                 overflow: "hidden",
+                boxShadow: passed ? "0 0 0 6px #8DB580" : "0 0 0 0 transparent",
+                transition: "box-shadow 0.25s",
               }}
             >
               <video ref={videoRef} playsInline muted style={{ width: "100%", display: "block" }} />
