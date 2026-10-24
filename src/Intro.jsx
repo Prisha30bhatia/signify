@@ -30,9 +30,9 @@ export default function Intro() {
   }
 
   const facts = [
-    [Camera, "Learns from your webcam"],
-    [ShieldCheck, "Your video never leaves your device"],
-    [BookOpen, "15 lessons, from letters to phrases"],
+    [Camera, "Works with your webcam"], 
+    [ShieldCheck, "Your video stays on your device"],
+    [BookOpen, "15 lessons to help you go from letters to phrases"],
   ];
 
   return (

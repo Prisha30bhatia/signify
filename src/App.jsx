@@ -133,6 +133,7 @@ const MODEL =
 
   if (hash === "#collect") return <Collect />;
   if (hash === "#recognize") return <Recognize />;
+  if (hash === "#daily") return <Lesson key="daily" id="daily" />;
   const m = hash.match(/^#lesson\/(\d+)$/);
   if (m) return <Lesson key={m[1]} id={Number(m[1])} />;
 

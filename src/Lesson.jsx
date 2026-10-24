@@ -1,3 +1,4 @@
+import { wordOfTheDay } from "./daily";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { X, Zap, Volume2, VolumeX, Check, Lightbulb, Trophy, Share2, RotateCcw, ShieldCheck } from "lucide-react";
 import { useHandSign } from "./useHandSign";
@@ -99,7 +100,11 @@ function CountUp({ to }) {
 }
 
 export default function Lesson({ id }) {
-  const lesson = LESSONS.find((l) => l.id === id);
+  const [lesson] = useState(() =>
+  id === "daily"
+    ? { id: "daily", pathway: "words", kind: "words", title: "Word of the day", words: [wordOfTheDay()] }
+    : LESSONS.find((l) => l.id === id)
+);
   const { videoRef, canvasRef, status, letter } = useHandSign();
 
   const [steps, setSteps] = useState(() => buildSteps(lesson));
