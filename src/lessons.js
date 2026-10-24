@@ -27,7 +27,17 @@ export const TIPS = {
   Z: "Point your index finger and draw a Z in the air. We check the pointing shape.",
 };
 
-const LETTER_GROUPS = ["ABC", "DEF", "GHI", "JKL", "MNO", "PQR", "STU", "VWX", "YZ"];
+const LETTER_GROUPS = [
+  ["ABC", "CAB"],
+  ["DEF", "DEAF"],
+  ["GHI", "HIDE"],
+  ["JKL", "LAKE"],
+  ["MNO", "NAME"],
+  ["PQR", "PARK"],
+  ["STU", "STAR"],
+  ["VWX", "WAVE"],
+  ["YZ", "SIGNIFY"],
+];
 
 const WORD_LESSONS = [
   { title: "First words", words: ["CAT", "DOG", "SUN"] },
@@ -41,12 +51,13 @@ const SENTENCE_LESSONS = [
   { title: "Keep going", sentences: ["LEARN WITH ME", "SIGN EVERY DAY"] },
 ];
 
-const letterLessons = LETTER_GROUPS.map((g, n) => ({
+const letterLessons = LETTER_GROUPS.map(([g, useIt], n) => ({
   id: n + 1,
   pathway: "letters",
   kind: "letters",
   title: g.split("").join(" · "),
   letters: g.split(""),
+  useIt,
 }));
 
 const wordLessons = WORD_LESSONS.map((l, n) => ({
