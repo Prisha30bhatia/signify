@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { LESSONS, PATHWAYS } from "./lessons";
+import { useState } from "react";
 import { loadProgress, currentStreak, xpToday } from "./progress";
 
 const DAILY_GOAL = 30;
@@ -201,6 +201,68 @@ function CertificateTab({ p }) {
     </div>
   );
 }
+const DAILY_WORDS = [
+  "HELLO", "FRIEND", "FAMILY", "SCHOOL", "HAPPY", "WATER", "MUSIC", "SMILE",
+  "LEARN", "HANDS", "PEACE", "GREAT", "BREAD", "APPLE", "TIGER", "OCEAN",
+  "RIVER", "CLOUD", "STORM", "LIGHT", "EARTH", "PLANT", "SUNNY", "BEACH",
+  "LEMON", "MANGO", "HONEY", "CANDY", "PIANO", "DREAM",
+];
+
+// Turns today's date into a number, so the word looks random
+// but stays the same all day and changes at midnight.
+function wordOfTheDay() {
+  const day = new Date().toLocaleDateString("en-CA");
+  let h = 0;
+  for (const c of day) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return DAILY_WORDS[h % DAILY_WORDS.length];
+}
+
+function WordOfTheDay() {
+  const word = wordOfTheDay();
+  return (
+    <div
+      style={{
+        background: "#E8F0F6",
+        borderRadius: 12,
+        padding: "20px 24px",
+        maxWidth: 640,
+        marginBottom: 40,
+      }}
+    >
+      <div style={{ fontWeight: 600, color: "#3D5A80" }}>Word of the day</div>
+      <div style={{ fontSize: 40, fontWeight: 700, letterSpacing: 6, margin: "4px 0 16px" }}>
+        {word}
+      </div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        {word.split("").map((c, k) => (
+          <div
+            key={k}
+            style={{
+              width: 92,
+              height: 92,
+              background: "#fff",
+              borderRadius: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src={`/signs/${c.toLowerCase()}.png`}
+              alt={`ASL handshape for the letter ${c}`}
+              style={{ width: 80 }}
+            />
+          </div>
+        ))}
+      </div>
+      <p style={{ margin: "16px 0 0", fontSize: 15 }}>
+        Fingerspell it one letter at a time.
+      </p>
+    </div>
+  );
+}
+
+
 export default function Home() {
   const [tab, setTab] = useState("learn");
   const p = loadProgress();
@@ -261,7 +323,8 @@ export default function Home() {
           </div>
         </div>
 
-        {tab === "learn" && <Path p={p} />}
+        {tab === "learn" && <WordOfTheDay />}
+        {tab === "learn" && <Path p={p} />} 
         {tab === "progress" && <ProgressTab p={p} />}
         {tab === "badges" && <BadgesTab p={p} />}
         {tab === "certificate" && <CertificateTab p={p} />}
