@@ -51,10 +51,15 @@ export function chime() {
 
 export function celebrate() {
   if (reduceMotion()) return;
-  confetti({
-    particleCount: 90,
-    spread: 75,
-    origin: { y: 0.6 },
-    colors: ["#3D5A80", "#98C1D9", "#8DB580", "#BA9593", "#293241"],
-  });
+  const colors = ["#FFFFFF", "#98C1D9", "#8DB580", "#BA9593", "#3D5A80"];
+  try {
+    confetti({ particleCount: 70, angle: 60, spread: 65, origin: { x: 0, y: 0.7 }, colors, zIndex: 1000 });
+    confetti({ particleCount: 70, angle: 120, spread: 65, origin: { x: 1, y: 0.7 }, colors, zIndex: 1000 });
+    setTimeout(
+      () => confetti({ particleCount: 90, spread: 100, origin: { y: 0.5 }, colors, zIndex: 1000 }),
+      250
+    );
+  } catch {
+    // confetti not available
+  }
 }
