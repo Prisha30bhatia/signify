@@ -7,7 +7,12 @@
   --bg: #F7F9FB;
   --tint: #E8F0F6;
 }
-
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
 * {
   box-sizing: border-box;
 }
