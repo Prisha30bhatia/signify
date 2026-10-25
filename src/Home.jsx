@@ -1,8 +1,7 @@
 import { useState } from "react";
 import {
-  Hand, House, BookOpen, TrendingUp, Award, ScrollText, Flame, Zap, Check, Lock, Play,
-  GraduationCap, Target, Type, MessageSquare, AlignLeft, Share2, Sun, Star, Sparkles,
-  ArrowRight, Heart,
+  Hand, House, BookOpen, TrendingUp, Award, ScrollText, Flame, Check, Lock, Play,
+  Target, Type, MessageSquare, AlignLeft, Share2, ArrowRight, Star,
 } from "lucide-react";
 import { LESSONS, PATHWAYS } from "./lessons";
 import { loadProgress, currentStreak, xpToday, weekDays, todayStr } from "./progress";
@@ -11,19 +10,19 @@ import { shareMessage } from "./share";
 import { C, primaryBtn } from "./theme";
 
 const DEEP = "#2D4466";
+const R = 4;
 const DAILY_GOAL = 30;
 const XP_PER_LEVEL = 100;
 const NODE = 84;
 const STEP = 140;
 const W = 500;
 const X_OFFSETS = [0, 100, 150, 100, 0, -100, -150, -100];
-const HEX = "polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 
 const PATH_INFO = {
-  letters: { icon: Type, color: C.blue, fg: "#fff", tint: C.blueTint, desc: "Learn the fingerspelling alphabet, A to Z." },
-  words: { icon: MessageSquare, color: C.sage, fg: C.ink, tint: C.sageTint, desc: "Fingerspell your first words." },
-  sentences: { icon: AlignLeft, color: C.rose, fg: C.ink, tint: C.roseTint, desc: "Put words together into phrases." },
+  letters: { icon: Type, color: C.blue, fg: "#fff", tint: C.blueTint, desc: "The alphabet, A to Z." },
+  words: { icon: MessageSquare, color: C.rose, fg: C.ink, tint: C.roseTint, desc: "Spell your first words." },
+  sentences: { icon: AlignLeft, color: C.sage, fg: C.ink, tint: C.sageTint, desc: "Strings of words, one at a time." },
 };
 
 const TABS = [
@@ -37,16 +36,17 @@ const TABS = [
 const inPathway = (p, path) =>
   LESSONS.filter((l) => l.pathway === path).every((l) => p.completed.includes(l.id));
 
+// Each badge shows the handshape for the first letter of its name.
 export const BADGES = [
-  { id: "first", name: "First Sign", how: "Finish your first lesson", icon: Hand, color: C.blue, fg: "#fff", test: (p) => p.completed.length >= 1 },
-  { id: "alphabet", name: "Alphabet Done", how: "Finish all letter lessons", icon: Type, color: C.sage, fg: C.ink, test: (p) => inPathway(p, "letters") },
+  { id: "first", name: "First Sign", sign: "f", how: "Finish your first lesson", color: C.blue, test: (p) => p.completed.length >= 1 },
+  { id: "alphabet", name: "Alphabet Done", sign: "a", how: "Finish all the letter lessons", color: C.sage, test: (p) => inPathway(p, "letters") },
   {
-    id: "word", name: "First Word", how: "Finish a word lesson", icon: MessageSquare, color: C.light, fg: C.ink,
+    id: "word", name: "First Word", sign: "w", how: "Finish a word lesson", color: C.light,
     test: (p) => LESSONS.some((l) => l.pathway === "words" && p.completed.includes(l.id)),
   },
-  { id: "streak", name: "3-Day Streak", how: "Practice 3 days in a row", icon: Flame, color: C.rose, fg: C.ink, test: (p) => p.bestStreak >= 3 },
-  { id: "perfect", name: "No Hints Needed", how: "Finish a lesson without hints", icon: Target, color: C.blue, fg: "#fff", test: (p) => p.perfect >= 1 },
-  { id: "grad", name: "Signify Graduate", how: "Finish every lesson", icon: GraduationCap, color: C.sage, fg: C.ink, test: (p) => LESSONS.every((l) => p.completed.includes(l.id)) },
+  { id: "streak", name: "Three Days Running", sign: "s", how: "Practice 3 days in a row", color: "#D4B5B3", test: (p) => p.bestStreak >= 3 },
+  { id: "perfect", name: "No Hints", sign: "n", how: "Finish a lesson without a hint", color: C.ink, test: (p) => p.perfect >= 1 },
+  { id: "grad", name: "Finished Everything", sign: "g", how: "Finish every lesson", color: "#5E8A52", test: (p) => LESSONS.every((l) => p.completed.includes(l.id)) },
 ];
 
 function savedName() {
@@ -65,13 +65,13 @@ function greeting() {
 const card = {
   background: "#fff",
   border: `1px solid ${C.line}`,
-  borderRadius: 16,
+  borderRadius: R,
   padding: 20,
 };
 
 function Bar({ value, color = C.light, track = C.tint, height = 10 }) {
   return (
-    <div style={{ height, borderRadius: height / 2, background: track, overflow: "hidden" }}>
+    <div style={{ height, borderRadius: 2, background: track, overflow: "hidden" }}>
       <div
         style={{
           height: "100%",
@@ -114,7 +114,7 @@ function HandTile({ letter, size = 72, bg = C.tint }) {
   return (
     <div
       style={{
-        width: size, height: size, background: bg, borderRadius: 12, flexShrink: 0,
+        width: size, height: size, background: bg, borderRadius: R, flexShrink: 0,
         display: "flex", alignItems: "center", justifyContent: "center",
       }}
     >
@@ -127,7 +127,7 @@ function LabeledTile({ letter, size = 100 }) {
   return (
     <div
       style={{
-        width: size, background: "#fff", borderRadius: 14, padding: "10px 6px 8px",
+        width: size, background: "#fff", borderRadius: R, padding: "10px 6px 8px",
         textAlign: "center", flexShrink: 0,
       }}
     >
@@ -141,21 +141,40 @@ function LabeledTile({ letter, size = 100 }) {
   );
 }
 
-function BadgeShape({ badge, earned, size = 92 }) {
-  const Icon = badge.icon;
+function BadgeTile({ badge, earned, size = 92 }) {
   return (
-    <div style={{ position: "relative", width: size, height: size, margin: "0 auto" }}>
-      <div style={{ position: "absolute", inset: 0, background: earned ? badge.color : "#DDE3EA", clipPath: HEX }} />
-      {earned && (
-        <div style={{ position: "absolute", inset: 7, background: "rgba(255,255,255,0.22)", clipPath: HEX }} />
+    <div
+      style={{
+        position: "relative", width: size, height: size, borderRadius: R,
+        background: earned ? badge.color : "#DADDE0",
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      }}
+    >
+      <img
+        src={`/signs/${badge.sign}.png`}
+        alt={earned ? `ASL handshape for ${badge.sign.toUpperCase()}` : ""}
+        style={{
+          width: size * 0.84,
+          opacity: earned ? 1 : 0.3,
+          filter: earned ? "none" : "grayscale(1)",
+        }}
+      />
+      {!earned && (
+        <Lock
+          size={Math.max(14, size * 0.2)}
+          color="#6B7480"
+          strokeWidth={2.4}
+          style={{ position: "absolute", right: 6, bottom: 6 }}
+        />
       )}
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {earned ? (
-          <Icon size={size * 0.4} color={badge.fg} strokeWidth={2.2} />
-        ) : (
-          <Lock size={size * 0.32} color="#7B8594" strokeWidth={2.2} />
-        )}
-      </div>
+    </div>
+  );
+}
+
+function Stat({ n, label }) {
+  return (
+    <div style={{ fontSize: 18 }}>
+      <strong style={{ fontSize: 18 }}>{n}</strong> {label}
     </div>
   );
 }
@@ -166,65 +185,46 @@ function Sidebar({ tab, setTab, p, who }) {
     <nav
       style={{
         width: 250, flexShrink: 0, background: DEEP, color: "#fff", position: "sticky", top: 0,
-        height: "100vh", boxSizing: "border-box", overflow: "hidden",
+        height: "100vh", boxSizing: "border-box", padding: "28px 18px 20px",
+        display: "flex", flexDirection: "column",
       }}
     >
-      <svg
-        aria-hidden="true" width="250" height="300" viewBox="0 0 250 300"
-        style={{ position: "absolute", left: 0, bottom: 70, pointerEvents: "none" }}
-      >
-        <path d="M0 140 C 60 80, 120 160, 180 110 S 240 80, 250 100 L250 300 L0 300Z" fill="rgba(255,255,255,0.05)" />
-        <path d="M0 200 C 70 150, 130 230, 250 160" fill="none" stroke="rgba(152,193,217,0.22)" strokeWidth="2" />
-        <path d="M0 230 C 80 190, 150 260, 250 200" fill="none" stroke="rgba(152,193,217,0.14)" strokeWidth="2" />
-      </svg>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 36, padding: "0 6px" }}>
+        <div
+          style={{
+            width: 42, height: 42, borderRadius: R, background: C.light,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <Hand size={24} color={DEEP} strokeWidth={2.2} />
+        </div>
+        <span style={{ fontSize: 28, fontWeight: 700 }}>Signify</span>
+      </div>
+
+      {TABS.map(([id, label, Icon]) => (
+        <button key={id} className={`nav-item${tab === id ? " active" : ""}`} onClick={() => setTab(id)}>
+          <Icon size={20} strokeWidth={2.2} />
+          {label}
+        </button>
+      ))}
 
       <div
         style={{
-          position: "relative", zIndex: 1, height: "100%", boxSizing: "border-box",
-          padding: "28px 18px 20px", display: "flex", flexDirection: "column",
+          marginTop: "auto", background: "rgba(255,255,255,0.12)", borderRadius: R,
+          padding: "12px 14px", display: "flex", alignItems: "center", gap: 12,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 36, padding: "0 6px" }}>
-          <div
-            style={{
-              width: 44, height: 44, borderRadius: "50%", background: C.light,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <Hand size={24} color={DEEP} strokeWidth={2.2} />
-          </div>
-          <span style={{ fontSize: 28, fontWeight: 700 }}>Signify</span>
-        </div>
-
-        {TABS.map(([id, label, Icon]) => (
-          <button key={id} className={`nav-item${tab === id ? " active" : ""}`} onClick={() => setTab(id)}>
-            <Icon size={20} strokeWidth={2.2} />
-            {label}
-          </button>
-        ))}
-
-        <div style={{ marginTop: "auto", padding: "0 6px 18px" }}>
-          
-        </div>
-
         <div
           style={{
-            background: "rgba(255,255,255,0.12)", borderRadius: 14, padding: "12px 14px",
-            display: "flex", alignItems: "center", gap: 12,
+            width: 40, height: 40, borderRadius: R, background: C.rose, color: C.ink,
+            display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18,
           }}
         >
-          <div
-            style={{
-              width: 42, height: 42, borderRadius: "50%", background: C.light, color: DEEP,
-              display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18,
-            }}
-          >
-            {(who || "S").charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div style={{ fontWeight: 700 }}>{who || "Signer"}</div>
-            <div style={{ fontSize: 14, color: C.light }}>Level {level}</div>
-          </div>
+          {(who || "S").charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <div style={{ fontWeight: 700 }}>{who || "Signer"}</div>
+          <div style={{ fontSize: 14, color: C.light }}>Level {level}</div>
         </div>
       </div>
     </nav>
@@ -233,89 +233,66 @@ function Sidebar({ tab, setTab, p, who }) {
 
 function Hero({ p }) {
   const next = LESSONS.find((l) => !p.completed.includes(l.id));
-  const swirl = (
-    <svg
-      aria-hidden="true" viewBox="0 0 600 260" preserveAspectRatio="none"
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
-    >
-      <path d="M-20 205 C 120 125, 260 265, 420 175 S 600 125, 640 155 L640 300 L-20 300Z" fill="rgba(255,255,255,0.05)" />
-      <path d="M-20 95 C 100 45, 240 125, 380 65 S 560 25, 640 55" fill="none" stroke="rgba(152,193,217,0.28)" strokeWidth="3" />
-      <circle cx="560" cy="40" r="5" fill="rgba(152,193,217,0.5)" />
-      <circle cx="520" cy="230" r="4" fill="rgba(152,193,217,0.4)" />
-    </svg>
-  );
 
   if (!next) {
     return (
-      <div style={{ position: "relative", background: DEEP, color: "#fff", borderRadius: 18, padding: 28, marginBottom: 24, overflow: "hidden" }}>
-        {swirl}
-        <div style={{ position: "relative" }}>
-          <div style={{ fontWeight: 600, color: C.light }}>All done</div>
-          <div style={{ fontSize: 30, fontWeight: 700, margin: "4px 0 18px" }}>You finished every lesson.</div>
-          <button
-            className="lift"
-            style={{ ...primaryBtn, background: C.light, color: C.ink }}
-            onClick={() => (window.location.hash = "#certificate")}
-          >
-            View certificate
-          </button>
-        </div>
+      <div style={{ background: DEEP, color: "#fff", borderRadius: R, padding: 28, marginBottom: 24 }}>
+        <div style={{ fontWeight: 600, color: C.light }}>That's all of them</div>
+        <div style={{ fontSize: 30, fontWeight: 700, margin: "4px 0 18px" }}>Every lesson is done.</div>
+        <button
+          className="lift"
+          style={{ ...primaryBtn, background: C.light, color: C.ink }}
+          onClick={() => (window.location.hash = "#certificate")}
+        >
+          Get your certificate
+        </button>
       </div>
     );
   }
 
   const letters = (
     next.letters || (next.words ? next.words[0] : next.sentences[0].split(" ")[0]).split("")
-  ).slice(0, 5);
+  ).slice(0, 3);
   const what = next.letters
-    ? `Sign ${next.letters.length} new letters`
+    ? `${next.letters.length} new letters to learn`
     : next.words
-    ? `Fingerspell ${next.words.length} words`
-    : `Spell ${next.sentences.length} phrases`;
+    ? `${next.words.length} words to spell`
+    : `${next.sentences.length} phrases to spell out`;
   const pathLessons = LESSONS.filter((l) => l.pathway === next.pathway);
   const fin = pathLessons.filter((l) => p.completed.includes(l.id)).length;
   const pathTitle = PATHWAYS.find((x) => x.id === next.pathway).title;
 
   return (
-    <div style={{ position: "relative", background: DEEP, color: "#fff", borderRadius: 18, padding: 28, marginBottom: 24, overflow: "hidden" }}>
-      {swirl}
-      <div style={{ position: "relative", display: "flex", gap: 24, flexWrap: "wrap", justifyContent: "space-between" }}>
+    <div style={{ background: DEEP, color: "#fff", borderRadius: R, padding: 28, marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 24, flexWrap: "wrap", justifyContent: "space-between" }}>
         <div style={{ flex: "1 1 260px", minWidth: 240 }}>
-          <div style={{ fontWeight: 600, color: C.light }}>Continue learning</div>
-          <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 2, margin: "2px 0 10px" }}>{next.title}</div>
+          <div style={{ fontWeight: 600, color: C.light }}>
+            {p.completed.length ? "Pick up where you left off" : "Start here"}
+          </div>
+          <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 2, margin: "2px 0 8px" }}>{next.title}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
             <Target size={18} color={C.light} />
             {what}
           </div>
           <div style={{ maxWidth: 300, marginBottom: 6 }}>
-            <Bar value={fin / pathLessons.length} color={C.light} track="rgba(255,255,255,0.2)" height={10} />
+            <Bar value={fin / pathLessons.length} color={C.light} track="rgba(255,255,255,0.2)" />
           </div>
           <div style={{ fontSize: 14, color: C.light, marginBottom: 22 }}>
             {fin} of {pathLessons.length} {pathTitle.toLowerCase()} lessons done
           </div>
           <button
             className="lift"
-            style={{ ...primaryBtn, background: C.light, color: C.ink, borderRadius: 999, padding: "14px 30px" }}
+            style={{ ...primaryBtn, background: C.light, color: C.ink }}
             onClick={() => (window.location.hash = `#lesson/${next.id}`)}
           >
             <Play size={18} fill={C.ink} />
             Start Lesson
           </button>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <span
-            style={{
-              position: "absolute", top: 0, right: 0, background: "rgba(255,255,255,0.16)",
-              borderRadius: 999, padding: "6px 14px", fontSize: 14, fontWeight: 600,
-            }}
-          >
-            Lesson {next.id} of {LESSONS.length}
-          </span>
-          <div style={{ display: "flex", gap: 12, marginTop: 40, flexWrap: "wrap" }}>
-            {letters.slice(0, 3).map((c, k) => (
-              <LabeledTile key={k} letter={c} size={104} />
-            ))}
-          </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+          {letters.map((c, k) => (
+            <LabeledTile key={k} letter={c} size={104} />
+          ))}
         </div>
       </div>
     </div>
@@ -325,37 +302,23 @@ function Hero({ p }) {
 function WordCard() {
   const word = wordOfTheDay();
   return (
-    <div style={{ position: "relative", background: C.tint, borderRadius: 18, padding: "24px 26px", marginBottom: 24, overflow: "hidden" }}>
-      <svg
-        aria-hidden="true" width="260" height="200" viewBox="0 0 260 200"
-        style={{ position: "absolute", right: -20, top: -10, pointerEvents: "none" }}
-      >
-        <circle cx="170" cy="100" r="30" fill="none" stroke={C.light} strokeWidth="2" opacity="0.7" />
-        <circle cx="170" cy="100" r="58" fill="none" stroke={C.light} strokeWidth="2" opacity="0.45" />
-        <circle cx="170" cy="100" r="88" fill="none" stroke={C.light} strokeWidth="2" opacity="0.25" />
-        <circle cx="170" cy="100" r="8" fill={C.light} />
-      </svg>
-      <div style={{ position: "relative" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600, color: C.blue }}>
-          <Sun size={20} color={C.rose} />
-          Word of the day
-        </div>
-        <div style={{ fontSize: 40, fontWeight: 700, letterSpacing: 5, margin: "2px 0 4px", color: DEEP }}>{word}</div>
-        <div style={{ marginBottom: 16 }}>Fingerspell it one letter at a time.</div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
-          {word.split("").map((c, k) => (
-            <LabeledTile key={k} letter={c} size={92} />
-          ))}
-        </div>
-        <button
-          className="lift"
-          style={{ ...primaryBtn, background: DEEP, borderRadius: 999 }}
-          onClick={() => (window.location.hash = "#daily")}
-        >
-          <Play size={18} fill="#fff" />
-          Practice Now
-        </button>
+    <div style={{ background: C.sageTint, borderLeft: `6px solid ${C.sage}`, borderRadius: R, padding: "22px 26px", marginBottom: 24 }}>
+      <div style={{ fontWeight: 600, color: "#4A6F40" }}>Word of the day</div>
+      <div style={{ fontSize: 40, fontWeight: 700, letterSpacing: 5, margin: "2px 0 4px", color: DEEP }}>{word}</div>
+      <div style={{ marginBottom: 16 }}>Spell it out, one letter at a time.</div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
+        {word.split("").map((c, k) => (
+          <LabeledTile key={k} letter={c} size={92} />
+        ))}
       </div>
+      <button
+        className="lift"
+        style={{ ...primaryBtn, background: DEEP }}
+        onClick={() => (window.location.hash = "#daily")}
+      >
+        <Play size={18} fill="#fff" />
+        Try it
+      </button>
     </div>
   );
 }
@@ -363,16 +326,16 @@ function WordCard() {
 function PathPreview({ p, setTab }) {
   const cur = LESSONS.findIndex((l) => !p.completed.includes(l.id));
   const all = cur < 0;
-  const startIdx = all
-    ? LESSONS.length - 4
-    : Math.max(0, Math.min(cur - 1, LESSONS.length - 4));
+  const startIdx = all ? LESSONS.length - 4 : Math.max(0, Math.min(cur - 1, LESSONS.length - 4));
   const slice = LESSONS.slice(startIdx, startIdx + 4);
 
-  const nodes = slice.map((l) => {
-    const done = p.completed.includes(l.id);
-    const isCurrent = !all && LESSONS[cur].id === l.id;
-    return { key: l.id, title: l.title, done, isCurrent, num: l.id };
-  });
+  const nodes = slice.map((l) => ({
+    key: l.id,
+    title: l.title,
+    num: l.id,
+    done: p.completed.includes(l.id),
+    isCurrent: !all && LESSONS[cur].id === l.id,
+  }));
 
   function Node({ n }) {
     const bg = n.done ? C.sage : n.isCurrent ? C.blue : C.tint;
@@ -392,7 +355,7 @@ function PathPreview({ p, setTab }) {
         </div>
         <div style={{ fontWeight: 700, fontSize: 14, color: n.isCurrent ? C.blue : C.ink }}>{n.title}</div>
         <div style={{ fontSize: 13, color: n.isCurrent ? C.blue : C.muted }}>
-          {n.done ? "Completed" : n.isCurrent ? "In progress" : "Locked"}
+          {n.done ? "Done" : n.isCurrent ? "Up next" : "Locked"}
         </div>
       </div>
     );
@@ -402,7 +365,7 @@ function PathPreview({ p, setTab }) {
     <div
       style={{
         flex: 1, height: 0, marginTop: 28, minWidth: 12,
-        borderTop: `3px dotted ${done ? C.sage : "#C5D3E0"}`,
+        borderTop: `3px dotted ${done ? C.sage : "#C5CED6"}`,
       }}
     />
   );
@@ -411,25 +374,25 @@ function PathPreview({ p, setTab }) {
     <div style={{ ...card, marginBottom: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20 }}>Your learning path</h2>
-          <div style={{ color: C.muted, marginTop: 2 }}>Finish lessons, earn XP, and unlock your certificate.</div>
+          <h2 style={{ margin: 0, fontSize: 20 }}>Where you are</h2>
+          <div style={{ color: C.muted, marginTop: 2 }}>The next few lessons, and the certificate at the end.</div>
         </div>
         <button
           className="lift"
           onClick={() => setTab("learn")}
           style={{
-            display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", fontFamily: "inherit",
+            display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontFamily: "inherit",
             fontWeight: 600, fontSize: 14, color: C.blue, background: "#fff", border: `1px solid ${C.light}`,
-            borderRadius: 999, cursor: "pointer",
+            borderRadius: R, cursor: "pointer",
           }}
         >
-          View all lessons
+          All lessons
           <ArrowRight size={16} />
         </button>
       </div>
 
       <div style={{ display: "flex", alignItems: "flex-start", marginTop: 24 }}>
-        {nodes.map((n, k) => (
+        {nodes.map((n) => (
           <div key={n.key} style={{ display: "contents" }}>
             <Node n={n} />
             {line(n.done)}
@@ -445,7 +408,7 @@ function PathPreview({ p, setTab }) {
             <ScrollText size={26} color={all ? C.ink : C.muted} />
           </div>
           <div style={{ fontWeight: 700, fontSize: 14 }}>Certificate</div>
-          <div style={{ fontSize: 13, color: C.muted }}>{all ? "Ready" : "Next milestone"}</div>
+          <div style={{ fontSize: 13, color: C.muted }}>{all ? "Ready" : "At the end"}</div>
         </div>
       </div>
     </div>
@@ -472,7 +435,7 @@ function WindingPath({ lessons, p, info }) {
   return (
     <div style={{ position: "relative", width: W, maxWidth: "100%", height, margin: "0 auto" }}>
       <svg width={W} height={height} style={{ position: "absolute", left: 0, top: 0 }} aria-hidden="true">
-        <path d={curve(pts)} fill="none" stroke="#C5D3E0" strokeWidth="6" strokeLinecap="round" strokeDasharray="1 14" />
+        <path d={curve(pts)} fill="none" stroke="#C5CED6" strokeWidth="6" strokeLinecap="round" strokeDasharray="1 14" />
         {reach.length > 1 && (
           <path d={curve(reach)} fill="none" stroke={info.color} strokeWidth="6" strokeLinecap="round" strokeDasharray="1 14" />
         )}
@@ -497,7 +460,7 @@ function WindingPath({ lessons, p, info }) {
                 className="lift"
                 disabled={locked}
                 onClick={open}
-                aria-label={`${l.title}${done ? ", completed" : locked ? ", locked" : ", next lesson"}`}
+                aria-label={`${l.title}${done ? ", done" : locked ? ", locked" : ", up next"}`}
                 style={{
                   position: "relative", width: NODE, height: NODE, borderRadius: "50%",
                   border: locked ? `3px solid ${C.line}` : 0,
@@ -533,7 +496,7 @@ function WindingPath({ lessons, p, info }) {
                 style={{
                   position: "absolute", top: y - 62, width: 190,
                   left: x <= W / 2 ? x + NODE / 2 + 16 : x - NODE / 2 - 16 - 190,
-                  background: "#fff", border: `2px solid ${info.color}`, borderRadius: 12,
+                  background: "#fff", border: `2px solid ${info.color}`, borderRadius: R,
                   padding: "14px 16px",
                 }}
               >
@@ -566,32 +529,22 @@ function PathwaySection({ path, p }) {
     <section style={{ marginBottom: 36 }}>
       <div
         style={{
-          background: info.color, color: info.fg, borderRadius: "16px 16px 0 0",
+          background: info.color, color: info.fg, borderRadius: `${R}px ${R}px 0 0`,
           padding: "20px 24px", display: "flex", alignItems: "center", gap: 16,
         }}
       >
-        <div
-          style={{
-            width: 48, height: 48, borderRadius: 12, background: "rgba(255,255,255,0.22)",
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }}
-        >
-          <Icon size={26} strokeWidth={2.2} />
-        </div>
+        <Icon size={30} strokeWidth={2.2} style={{ flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
           <h2 style={{ margin: 0, fontSize: 24 }}>{path.title}</h2>
           <div>{info.desc}</div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.1 }}>
-            {finished}/{lessons.length}
-          </div>
-          <div style={{ fontSize: 14 }}>lessons</div>
+        <div style={{ fontSize: 18 }}>
+          <strong>{finished}</strong> of {lessons.length} done
         </div>
       </div>
       <div
         style={{
-          background: info.tint, borderRadius: "0 0 16px 16px", padding: "28px 12px 12px",
+          background: info.tint, borderRadius: `0 0 ${R}px ${R}px`, padding: "28px 12px 12px",
           border: `1px solid ${C.line}`, borderTop: 0,
         }}
       >
@@ -615,58 +568,39 @@ function Rail({ p }) {
 
   const earned = BADGES.filter((b) => b.test(p));
   const badge = earned.length ? earned[earned.length - 1] : BADGES[0];
-  const BadgeIcon = badge.icon;
 
   return (
     <aside
       style={{
         width: 300, flexShrink: 0, position: "sticky", top: 36,
-        display: "flex", flexDirection: "column", gap: 16,
+        display: "flex", flexDirection: "column", gap: 20,
       }}
     >
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, marginBottom: 14 }}>
           <Target size={20} color={C.blue} />
-          Your daily goal
+          Today
         </div>
         <Ring value={today / DAILY_GOAL} color={C.sage} track={C.tint}>
           <div style={{ fontSize: 36, fontWeight: 700, lineHeight: 1 }}>{Math.min(today, DAILY_GOAL)}</div>
           <div style={{ fontSize: 14, color: C.muted }}>of {DAILY_GOAL} XP</div>
         </Ring>
-        <div
-          style={{
-            textAlign: "center", marginTop: 14, fontWeight: 600, display: "flex",
-            alignItems: "center", justifyContent: "center", gap: 8,
-          }}
-        >
-          {reached ? (
-            <>
-              
-              Goal reached
-              
-            </>
-          ) : (
-            `${DAILY_GOAL - today} XP to go`
-          )}
+        <div style={{ textAlign: "center", marginTop: 14, fontWeight: 600 }}>
+          {reached ? "Done for today." : `${DAILY_GOAL - today} more XP for today's goal`}
         </div>
       </div>
 
-      <div style={{ ...card, background: C.roseTint, border: `1px solid ${C.rose}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div
-            style={{
-              width: 52, height: 52, borderRadius: "50%", background: C.rose, flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <Flame size={28} color={C.ink} fill={C.ink} />
-          </div>
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.1 }}>{streak} day streak</div>
-            <div style={{ fontSize: 14 }}>{streak > 0 ? "Keep it going." : "Practice today to start one."}</div>
+      <div style={{ background: C.tint, borderRadius: R, padding: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Flame size={30} color={C.rose} fill={C.rose} />
+          <div style={{ fontSize: 20, fontWeight: 700 }}>
+            {streak === 0
+              ? "No streak yet"
+              : `${streak} ${streak === 1 ? "day" : "days"} in a row`}
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 18 }}>
+        {streak === 0 && <div style={{ marginTop: 4, color: C.muted }}>Do a lesson today and it starts.</div>}
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16 }}>
           {week.map((d, k) => {
             const did = p.days[d] !== undefined;
             return (
@@ -674,7 +608,8 @@ function Rail({ p }) {
                 <div
                   style={{
                     width: 28, height: 28, borderRadius: "50%", margin: "0 auto 4px",
-                    background: did ? C.rose : "#fff", border: `2px solid ${d === now ? C.ink : C.rose}`,
+                    background: did ? C.rose : "#fff",
+                    border: `2px solid ${d === now ? C.ink : C.rose}`,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}
                 >
@@ -687,29 +622,28 @@ function Rail({ p }) {
         </div>
       </div>
 
-      <div style={card}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, marginBottom: 12 }}>
-          <Star size={20} color={C.rose} fill={C.rose} />
+      <div style={{ borderTop: `2px solid ${C.blue}`, paddingTop: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, marginBottom: 10 }}>
+          
           Level {level}
         </div>
         <Bar value={into / XP_PER_LEVEL} color={C.blue} />
-        <div style={{ marginTop: 10, color: C.muted, fontSize: 15 }}>
-          {XP_PER_LEVEL - into} XP to level {level + 1} · {p.xp} XP total
+        <div style={{ marginTop: 8, color: C.muted, fontSize: 15 }}>
+          {XP_PER_LEVEL - into} XP until level {level + 1}
         </div>
       </div>
 
-      <div style={card}>
+      <div style={{ borderTop: `2px solid ${C.light}`, paddingTop: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
           <TrendingUp size={20} color={C.blue} />
-          This week
+          This week: {weekTotal} XP
         </div>
-        <div style={{ color: C.muted, fontSize: 15, margin: "4px 0 12px" }}>{weekTotal} XP earned</div>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 90 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 90, marginTop: 12 }}>
           {weekXp.map((xp, k) => (
             <div key={k} style={{ flex: 1, textAlign: "center" }}>
               <div
                 style={{
-                  height: Math.max(6, (xp / peak) * 78), borderRadius: 6,
+                  height: Math.max(6, (xp / peak) * 78), borderRadius: 2,
                   background: xp > 0 ? C.blue : C.tint, transition: "height 0.4s",
                 }}
               />
@@ -721,36 +655,17 @@ function Rail({ p }) {
         </div>
       </div>
 
-      <div style={{ ...card, display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 56, height: 56, flexShrink: 0 }}>
-          <BadgeShape badge={badge} earned={earned.length > 0} size={56} />
-        </div>
+      <div style={{ borderTop: `2px solid ${C.sage}`, paddingTop: 14, display: "flex", alignItems: "center", gap: 14 }}>
+        <BadgeTile badge={badge} earned={earned.length > 0} size={60} />
         <div>
           <div style={{ fontSize: 13, fontWeight: 600, color: C.blue }}>
-            {earned.length ? "Latest badge" : "First badge to earn"}
+            {earned.length ? "Latest badge" : "First one to get"}
           </div>
           <div style={{ fontWeight: 700 }}>{badge.name}</div>
-          <div style={{ fontSize: 14, color: C.muted }}>{earned.length ? "Earned" : badge.how}</div>
+          <div style={{ fontSize: 14, color: C.muted }}>{earned.length ? "Yours" : badge.how}</div>
         </div>
       </div>
     </aside>
-  );
-}
-
-function StatTile({ icon: Icon, color, fg, tint, value, label }) {
-  return (
-    <div style={{ background: tint, borderRadius: 16, padding: 20 }}>
-      <div
-        style={{
-          width: 44, height: 44, borderRadius: 12, background: color,
-          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
-        }}
-      >
-        <Icon size={24} color={fg} strokeWidth={2.2} />
-      </div>
-      <div style={{ fontSize: 32, fontWeight: 700, lineHeight: 1.1 }}>{value}</div>
-      <div style={{ color: C.muted, fontWeight: 500 }}>{label}</div>
-    </div>
   );
 }
 
@@ -763,16 +678,19 @@ function ProgressTab({ p }) {
 
   return (
     <div>
-      <h1 style={{ fontSize: 30, margin: "0 0 20px" }}>Your progress</h1>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
-        <StatTile icon={Flame} color={C.rose} fg={C.ink} tint={C.roseTint} value={currentStreak(p)} label="day streak" />
-        <StatTile icon={Zap} color={C.blue} fg="#fff" tint={C.blueTint} value={p.xp} label={`XP · Level ${level}`} />
-        <StatTile icon={Check} color={C.sage} fg={C.ink} tint={C.sageTint} value={`${p.completed.length}/${LESSONS.length}`} label="lessons finished" />
-        <StatTile icon={Target} color={C.light} fg={C.ink} tint={C.tint} value={p.perfect} label="lessons with no hints" />
+      <h1 style={{ fontSize: 30, margin: "0 0 16px" }}>Progress</h1>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
+        <Stat n={currentStreak(p)} label="day streak" />
+        <span style={{ color: C.line }}>|</span>
+        <Stat n={p.xp} label={`XP, level ${level}`} />
+        <span style={{ color: C.line }}>|</span>
+        <Stat n={`${p.completed.length} of ${LESSONS.length}`} label="lessons done" />
+        <span style={{ color: C.line }}>|</span>
+        <Stat n={p.perfect} label={p.perfect === 1 ? "lesson with no hints" : "lessons with no hints"} />
       </div>
 
       <div style={{ ...card, marginBottom: 24 }}>
-        <h2 style={{ fontSize: 20, margin: "0 0 16px" }}>Pathways</h2>
+        <h2 style={{ fontSize: 20, margin: "0 0 16px" }}>By pathway</h2>
         {PATHWAYS.map((path) => {
           const info = PATH_INFO[path.id];
           const lessons = LESSONS.filter((l) => l.pathway === path.id);
@@ -790,9 +708,9 @@ function ProgressTab({ p }) {
       </div>
 
       <div style={{ ...card, marginBottom: 24 }}>
-        <h2 style={{ fontSize: 20, margin: "0 0 16px" }}>Letters you've learned</h2>
+        <h2 style={{ fontSize: 20, margin: "0 0 16px" }}>Letters you know</h2>
         {learned.length === 0 ? (
-          <p style={{ margin: 0, color: C.muted }}>Finish your first lesson and your letters show up here.</p>
+          <p style={{ margin: 0, color: C.muted }}>Nothing here yet. Finish a lesson and the letters show up.</p>
         ) : (
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {learned.map((c) => (
@@ -830,23 +748,18 @@ function BadgesTab({ p }) {
     <div>
       <h1 style={{ fontSize: 30, margin: 0 }}>Badges</h1>
       <p style={{ margin: "4px 0 24px", color: C.blue, fontWeight: 600 }}>
-        {got} of {BADGES.length} earned
+        {got} of {BADGES.length} so far
       </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 20 }}>
         {BADGES.map((b) => {
           const earned = b.test(p);
           return (
-            <div
-              key={b.id}
-              style={{
-                ...card, textAlign: "center", padding: "24px 16px",
-                background: earned ? "#fff" : C.bg,
-                border: `1px solid ${earned ? b.color : C.line}`,
-              }}
-            >
-              <BadgeShape badge={b} earned={earned} />
-              <div style={{ fontWeight: 700, fontSize: 18, margin: "14px 0 4px" }}>{b.name}</div>
-              <div style={{ color: C.muted, fontSize: 15 }}>{earned ? "Earned" : b.how}</div>
+            <div key={b.id} style={{ textAlign: "center" }}>
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <BadgeTile badge={b} earned={earned} size={116} />
+              </div>
+              <div style={{ fontWeight: 700, fontSize: 18, margin: "12px 0 2px" }}>{b.name}</div>
+              <div style={{ color: C.muted, fontSize: 15 }}>{earned ? "Yours" : b.how}</div>
             </div>
           );
         })}
@@ -862,24 +775,19 @@ function CertificateTab({ p }) {
     <div style={{ maxWidth: 520 }}>
       <h1 style={{ fontSize: 30, margin: "0 0 20px" }}>Certificate</h1>
       <div style={{ ...card, background: all ? C.sageTint : "#fff", padding: 28 }}>
-        <div
-          style={{
-            width: 56, height: 56, borderRadius: 14, background: all ? C.sage : C.tint,
-            display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
-          }}
-        >
-          <ScrollText size={28} color={C.ink} />
-        </div>
         {all ? (
           <>
-            <p style={{ fontSize: 18, marginTop: 0 }}>You finished every lesson. Your certificate is ready.</p>
+            <p style={{ fontSize: 18, marginTop: 0 }}>You did all of them. Go grab your certificate.</p>
             <button className="lift" style={primaryBtn} onClick={() => (window.location.hash = "#certificate")}>
+              <ScrollText size={18} />
               View certificate
             </button>
           </>
         ) : (
           <>
-            <p style={{ fontSize: 18, marginTop: 0 }}>Finish all {LESSONS.length} lessons to unlock your certificate.</p>
+            <p style={{ fontSize: 18, marginTop: 0 }}>
+              {LESSONS.length - finished} {LESSONS.length - finished === 1 ? "lesson" : "lessons"} to go.
+            </p>
             <Bar value={finished / LESSONS.length} color={C.sage} height={12} />
             <p style={{ color: C.muted, marginBottom: 0 }}>{finished} of {LESSONS.length} done</p>
           </>
@@ -904,13 +812,12 @@ export default function Home() {
           <div style={{ flex: "1 1 540px", minWidth: 0 }}>
             {tab === "home" && (
               <>
-                <h1 style={{ fontSize: 32, margin: 0, display: "flex", alignItems: "center", gap: 12 }}>
+                <h1 style={{ fontSize: 32, margin: 0 }}>
                   {greeting()}
                   {who ? `, ${who}` : ""}
-                  <Sun size={30} color={C.rose} />
                 </h1>
                 <p style={{ margin: "4px 0 24px", color: C.blue, fontWeight: 500 }}>
-                  {next ? `You're on lesson ${next.id}: ${next.title}.` : "You've finished every lesson."}
+                  {next ? `Next up is lesson ${next.id}: ${next.title}.` : "That's every lesson. Nice."}
                 </p>
                 <Hero p={p} />
                 <WordCard />
@@ -919,7 +826,7 @@ export default function Home() {
             )}
             {tab === "learn" && (
               <>
-                <h1 style={{ fontSize: 32, margin: "0 0 24px" }}>Your lessons</h1>
+                <h1 style={{ fontSize: 32, margin: "0 0 24px" }}>Lessons</h1>
                 {PATHWAYS.map((path) => (
                   <PathwaySection key={path.id} path={path} p={p} />
                 ))}
